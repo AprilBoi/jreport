@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,date
+import datetime as dt
 import time
 import os
 import os.path
@@ -22,7 +23,8 @@ class JReportExtract:
         options.add_argument("--headless")                  
         self.driver = webdriver.Chrome(service=service, options=options)      
         
-    def download_data(self, url: str, reportdate):
+    def download_data(self, url: str, report_date):
+        
         if not self.driver:
             print('start')
             self.start_driver()        
@@ -32,10 +34,10 @@ class JReportExtract:
         print(f'{reportdate=}')
 
         report_startdate = self.driver.find_element("id", "sdate")
-        report_startdate.send_keys(reportdate)
+        report_startdate.send_keys(report_date)
 
         report_enddate = self.driver.find_element("id", "edate")
-        report_enddate.send_keys(reportdate)
+        report_enddate.send_keys(report_date)
 
         report_enddate.submit()
         time.sleep(5)       
@@ -48,9 +50,10 @@ class JReportExtract:
     def data_cleanup(self,queue_path):
                    # Logic from rename
         for filename in os.listdir(queue_path):
+           
             if filename.endswith('.xlsx'):
                 file_path = os.path.join(queue_path, filename)
-
+                print(f'Update column J for file {file_path=}')                 
                 # Load the Excel workbook
                 workbook = openpyxl.load_workbook(file_path)
                 workbook["Sheet1"].title = "CA COG"
@@ -83,48 +86,33 @@ if __name__ == "__main__":
     if not os.path.exists(queue_path):
         print('create queue folder')
         os.makedirs(queue_path)
-     
-    yesterday = datetime.now() - timedelta(1)
-    reportdate = datetime.strftime(yesterday, '%m-%d-%Y')
-    filereportdate = datetime.strftime(yesterday, '%Y%m%d')  
-
-    downloader = JReportExtract(driver_path)        
-    url = "https://uschizwweb1504/mcmprpt/jReport.asp"   
-    
-    try:      
-        downloader.download_data(url, reportdate)              
-        downloaded_file = os.path.join(os.path.expanduser("~"), "Downloads\\results.xls")                  
-        print(f'{downloaded_file=}')       
-          
-        newfilelocation = f'{queue_path}CA COG_{filereportdate}.xlsx'
-        
-        if os.path.exists(downloaded_file):            
-            downloader.html_xlsx(downloaded_file,newfilelocation)          
-            os.remove(downloaded_file)            
-            downloader.data_cleanup(queue_path)
-
-            # # Logic from rename
-            # for filename in os.listdir(queue_path):
-            #     if filename.endswith('.xlsx'):
-            #         file_path = os.path.join(queue_path, filename)
-
-            #         # Load the Excel workbook
-            #         workbook = openpyxl.load_workbook(file_path)
-            #         workbook["Sheet1"].title = "CA COG"
-            #         ws = workbook["CA COG"]
-            #         workbook["CA COG"].delete_rows(ws.min_row, 1)
-            #         for row in range(2, ws.max_row+1):
-            #             ws["{}{}".format("J", row)].number_format = '@'  
-                        
-            #         # Save the changes
-            #         updated_file_path = os.path.join(queue_path, filename)
-            #         workbook.save(updated_file_path)
-
-        else:
-            print("wala")       
-        
       
+    end_date = dt.date.today() - dt.timedelta(days=1)     
+    start_date = end_date - dt.timedelta(days=26) 
+    # print(start_date)
+    # breakpoint()
+    date_range = [start_date + dt.timedelta(days=delta) for delta in range((end_date - start_date).days + 1)]
+    downloader = JReportExtract(driver_path)        
+    url = "https://uschizwweb1504/mcmprpt/jReport.asp"           
+    
+    try: 
+        for reportdate in date_range:
+            file_report_date = reportdate.strftime('%Y%m%d')             
+            downloader.download_data(url, reportdate.strftime('%m-%d-%Y')  )              
+            downloaded_file = os.path.join(os.path.expanduser("~"), "Downloads\\results.xls")                                             
+            newfilelocation = f'{queue_path}CA COG {file_report_date}.xlsx'
+            
+            if os.path.exists(downloaded_file):            
+                downloader.html_xlsx(downloaded_file,newfilelocation)          
+                os.remove(downloaded_file)                     
+            else:
+                print("wala")  
+
+        downloader.data_cleanup(queue_path)     
         
-    finally:
+        
+    finally:        
+        print('Tapos Na!!!!')
         downloader.stop_driver()
+        
         
