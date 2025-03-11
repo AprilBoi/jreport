@@ -80,15 +80,16 @@ if __name__ == "__main__":
     driver_path = r"jreport\Scripts\chromedriver.exe"    
     os.path.isfile(driver_path)
     print(f'Chrome driver is available {os.path.isfile(driver_path)}')
-
+    # breakpoint()
     queue_path = r'jreport\\Queue\\' 
     # create queue folder if not exist 
     if not os.path.exists(queue_path):
         print('create queue folder')
         os.makedirs(queue_path)
       
-    end_date = dt.date.today() - dt.timedelta(days=1)     
-    start_date = end_date - dt.timedelta(days=26) 
+    end_date = dt.date.today() - dt.timedelta(days=5)     
+     
+    start_date = end_date - dt.timedelta(days=0) 
     # print(start_date)
     # breakpoint()
     date_range = [start_date + dt.timedelta(days=delta) for delta in range((end_date - start_date).days + 1)]
