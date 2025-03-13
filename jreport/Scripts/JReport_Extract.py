@@ -86,10 +86,11 @@ if __name__ == "__main__":
     if not os.path.exists(queue_path):
         print('create queue folder')
         os.makedirs(queue_path)
+          
+    end_date = dt.date.today() - dt.timedelta(days=1)     
+    start_date = end_date - dt.timedelta(days=1) 
       
-    end_date = dt.date.today() - dt.timedelta(days=5)     
      
-    start_date = end_date - dt.timedelta(days=0) 
     # print(start_date)
     # breakpoint()
     date_range = [start_date + dt.timedelta(days=delta) for delta in range((end_date - start_date).days + 1)]
@@ -108,7 +109,7 @@ if __name__ == "__main__":
                 os.remove(downloaded_file)                     
             else:
                 print("wala")  
-
+        # breakpoint()
         downloader.data_cleanup(queue_path)     
         
         
