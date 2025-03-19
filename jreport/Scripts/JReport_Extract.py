@@ -91,15 +91,18 @@ if __name__ == "__main__":
     start_date = end_date - dt.timedelta(days=1) 
       
      
-    # print(start_date)
+    print(start_date)
     # breakpoint()
     date_range = [start_date + dt.timedelta(days=delta) for delta in range((end_date - start_date).days + 1)]
+    print(date_range)
+    # breakpoint()
     downloader = JReportExtract(driver_path)        
     url = "https://uschizwweb1504/mcmprpt/jReport.asp"           
     
     try: 
         for reportdate in date_range:
-            file_report_date = reportdate.strftime('%Y%m%d')             
+            file_report_date = reportdate.strftime('%Y%m%d')  
+            breakpoint()           
             downloader.download_data(url, reportdate.strftime('%m-%d-%Y')  )              
             downloaded_file = os.path.join(os.path.expanduser("~"), "Downloads\\results.xls")                                             
             newfilelocation = f'{queue_path}CA COG {file_report_date}.xlsx'
@@ -110,9 +113,8 @@ if __name__ == "__main__":
             else:
                 print("wala")  
         # breakpoint()
-        downloader.data_cleanup(queue_path)     
-        
-        
+        downloader.data_cleanup(queue_path)    
+                
     finally:        
         print('Tapos Na!!!!')
         downloader.stop_driver()
